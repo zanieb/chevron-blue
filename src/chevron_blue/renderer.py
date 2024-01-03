@@ -36,9 +36,10 @@ def _get_key(key, scopes, warn, keep, def_ldel, def_rdel):
 
     # Loop through the scopes
     for scope in scopes:
+        key_index = 0
         try:
             # For every dot seperated key
-            for child in key.split("."):
+            for key_index, child in enumerate(key.split(".")):
                 # Move into the scope
                 try:
                     # Try subscripting (Normal dictionaries)
@@ -64,8 +65,11 @@ def _get_key(key, scopes, warn, keep, def_ldel, def_rdel):
                 return scope or ""
         except (AttributeError, KeyError, IndexError, ValueError):
             # We couldn't find the key in the current scope
-            # We'll try again on the next pass
-            pass
+            # We'll try again on the next pass if this is the first key
+            # Otherwise, we should not continue up the stack
+            # ref https://github.com/mustache/spec/pull/48#issuecomment-5919586
+            if key_index > 0:
+                break
 
     # We couldn't find the key in any of the scopes
 

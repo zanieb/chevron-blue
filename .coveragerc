@@ -1,7 +1,0 @@
-[report]
-exclude_lines =
-    if __name__ == .__main__.:
-    def cli_main
-
-    \# python 2
-    \# not tested

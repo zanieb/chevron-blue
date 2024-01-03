@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "chevron-blue"
+version = "0.0.0"
+description = "A Python implementation of the mustache template language"
+authors = ["Zanie <contact@zanie.dev>"]
+readme = "README.md"
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.3"
+ruff = "^0.1.7"
+
+[tool.ruff.lint]
+extend-select = ["I", "W292"]
+preview = true

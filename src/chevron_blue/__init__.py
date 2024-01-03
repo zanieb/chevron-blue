@@ -1,4 +1,4 @@
-from .main import main, cli_main
+from .main import cli_main, main
 from .renderer import render
 from .tokenizer import ChevronError
 

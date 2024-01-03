@@ -9,6 +9,9 @@ license = "MIT"
 [tool.poetry.dependencies]
 python = "^3.8"
 
+[tool.poetry.scripts]
+chevron-blue = "chevron_blue:cli_main"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

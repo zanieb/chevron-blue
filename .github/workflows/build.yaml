@@ -96,3 +96,7 @@ jobs:
         run: |
           installed=$(poetry run python -c "import pkg_resources; print(pkg_resources.get_distribution('chevron-blue').version)")
           test $installed = ${{ needs.build-and-publish.outputs.build-version }}
+
+      - name: Check CLI help
+        run: |
+          poetry run -- chevron-blue --help

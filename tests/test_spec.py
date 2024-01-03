@@ -511,6 +511,20 @@ class ExpandedCoverage(unittest.TestCase):
         expected = "1st {{ missing_key }} 3rd"
         self.assertEqual(result, expected)
 
+    # https://github.com/noahmorrison/chevron/pull/94
+    def test_no_escape(self):
+        args = {
+            "template": "{{ html_escaped }}",
+            "data": {
+                "html_escaped": '< > & "',
+            },
+            "no_escape": True,
+        }
+
+        result = chevron_blue.render(**args)
+        expected = '< > & "'
+        self.assertEqual(result, expected)
+
 
 # Run unit tests from command line
 if __name__ == "__main__":

@@ -1,20 +1,12 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
+#!/usr/bin/python3
 
 import collections
 import io
 import json
 import os
-import sys
 import unittest
 
 import chevron_blue
-
-if sys.version_info[0] == 3:
-    python3 = True
-else:  # python 2
-    python3 = False
-
 
 SPECS_PATH = os.path.join("spec", "specs")
 if os.path.exists(SPECS_PATH):
@@ -137,8 +129,6 @@ class ExpandedCoverage(unittest.TestCase):
 
         with io.open("tests/test.rendered", "r", encoding="utf-8") as f:
             expected = f.read()
-            if not python3:
-                expected = expected.encode("utf-8")
 
         self.assertEqual(result, expected)
 
@@ -458,8 +448,6 @@ class ExpandedCoverage(unittest.TestCase):
 
         with io.open("test-partials-disabled.rendered", "r", encoding="utf-8") as f:
             expected = f.read()
-            if not python3:
-                expected = expected.encode("utf-8")
 
         self.assertEqual(resultNone, expected)
         self.assertEqual(resultEmpty, expected)

@@ -31,7 +31,7 @@ def _test_case_from_path(json_path):
                     obj["template"], obj["data"], partials_dict=obj.get("partials", {})
                 )
 
-                self.assertEqual(result, obj["expected"])
+                assert result == obj["expected"], obj["desc"]
 
             test_case.__doc__ = "suite: {0}    desc: {1}".format(spec, obj["desc"])
             return test_case
@@ -41,7 +41,12 @@ def _test_case_from_path(json_path):
 
         # Generates a unit test for each test object
         for i, test in enumerate(yaml["tests"]):
-            vars()["test_" + str(i)] = _test_from_object(test)
+            vars()[
+                "test_" + test["name"].lower().replace(" ", "_").replace("-", "_")
+            ] = _test_from_object(test)
+
+        def __repr__(self) -> str:
+            return f"<GeneratedMustacheTestCase json_path={json_path}>"
 
     # Return the built class
     return MustacheTestCase

@@ -525,6 +525,20 @@ class ExpandedCoverage(unittest.TestCase):
         expected = '< > & "'
         self.assertEqual(result, expected)
 
+        args = {
+            "template": "{{#a}}{{ html_escaped }}{{/a}}",
+            "data": {
+                "a": {
+                    "html_escaped": '< > & "',
+                }
+            },
+            "no_escape": True,
+        }
+
+        result = chevron_blue.render(**args)
+        expected = '< > & "'
+        self.assertEqual(result, expected)
+
 
 # Run unit tests from command line
 if __name__ == "__main__":

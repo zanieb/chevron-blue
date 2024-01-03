@@ -2,14 +2,13 @@
 # -*- coding: utf-8 -*-
 
 import collections
-import unittest
-import os
-import json
 import io
+import json
+import os
+import sys
+import unittest
 
 import chevron_blue
-
-import sys
 
 if sys.version_info[0] == 3:
     python3 = True

@@ -301,6 +301,7 @@ def render(
                         scopes=data and [data] + scopes or scopes,
                         warn=warn,
                         keep=keep,
+                        no_escape=no_escape,
                     ),
                 )
 
@@ -340,6 +341,7 @@ def render(
                         def_rdel=def_rdel,
                         warn=warn,
                         keep=keep,
+                        no_escape=no_escape,
                     )
                     output += rend
 
@@ -378,6 +380,7 @@ def render(
                 scopes=scopes,
                 warn=warn,
                 keep=keep,
+                no_escape=no_escape,
             )
 
             # If the partial was indented

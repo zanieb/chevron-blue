@@ -4,14 +4,14 @@
 from sys import argv
 from timeit import timeit
 
-import chevron
+import chevron_blue
 
 
 def make_test(template=None, data=None, expected=None):
     def test():
-        result = chevron.render(template, data)
+        result = chevron_blue.render(template, data)
         if result != expected:
-            error = 'Test failed:\n-- got --\n{}\n-- expected --\n{}'
+            error = "Test failed:\n-- got --\n{}\n-- expected --\n{}"
             raise Exception(error.format(result, expected))
 
     return test
@@ -19,7 +19,7 @@ def make_test(template=None, data=None, expected=None):
 
 def main(times):
     args = {
-        'template': """\
+        "template": """\
 {{# comments }}
 <div class=comment>
     <span class=user>{{ user }}</span>
@@ -28,26 +28,27 @@ def main(times):
 </div>
 {{/ comments }}
 """,
-        'data': {
-            'comments': [
-                {'user': 'tommy',
-                 'body': 'If this gets to the front page I\'ll eat my hat!',
-                 'vote': 625},
-
-                {'user': 'trololol',
-                 'body': 'this',
-                 'vote': -142},
-
-                {'user': 'mctom',
-                 'body': 'I wish thinking of test phrases was easier',
-                 'vote': 83},
-
-                {'user': 'the_thinker',
-                 'body': 'Why is /u/trololol\'s post higher than ours?',
-                 'vote': 36}
+        "data": {
+            "comments": [
+                {
+                    "user": "tommy",
+                    "body": "If this gets to the front page I'll eat my hat!",
+                    "vote": 625,
+                },
+                {"user": "trololol", "body": "this", "vote": -142},
+                {
+                    "user": "mctom",
+                    "body": "I wish thinking of test phrases was easier",
+                    "vote": 83,
+                },
+                {
+                    "user": "the_thinker",
+                    "body": "Why is /u/trololol's post higher than ours?",
+                    "vote": 36,
+                },
             ]
         },
-        'expected': """\
+        "expected": """\
 <div class=comment>
     <span class=user>tommy</span>
     <span class=body>If this gets to the front page I'll eat my hat!</span>
@@ -68,7 +69,7 @@ def main(times):
     <span class=body>Why is /u/trololol's post higher than ours?</span>
     <span class=vote>36</span>
 </div>
-"""
+""",
     }
 
     test = make_test(**args)
@@ -76,7 +77,7 @@ def main(times):
     print(timeit(test, number=times))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     try:
         main(int(argv[1]))
     except IndexError:

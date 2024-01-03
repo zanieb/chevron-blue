@@ -1,14 +1,10 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import io
 import sys
 
-try:
-    from .metadata import version
-    from .renderer import render
-except (ValueError, SystemError):  # python 2
-    from metadata import version
-    from renderer import render
+from .metadata import version
+from .renderer import render
 
 
 def main(template, data=None, **kwargs):

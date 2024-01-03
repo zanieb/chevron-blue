@@ -113,6 +113,12 @@ def cli_main():
         action="store_true",
     )
 
+    parser.add_argument(
+        "--no-escape",
+        help="Do not HTML escape values.",
+        action="store_true",
+    )
+
     args = vars(parser.parse_args())
 
     try:

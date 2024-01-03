@@ -123,6 +123,7 @@ def render(
     scopes=None,
     warn=False,
     keep=False,
+    no_escape=False,
 ):
     """Render a mustache template.
 
@@ -169,6 +170,8 @@ def render(
     scopes        -- The list of scopes that get_key will look through
 
     warn          -- Issue a warning to stderr when a template substitution isn't found in the data
+
+    no_escape     -- Do not HTML escape variable values
 
     keep          -- Keep unreplaced tags when a template substitution isn't found in the data
 
@@ -230,7 +233,7 @@ def render(
                 thing = scopes[1]
             if not isinstance(thing, str):
                 thing = str(thing)
-            output += _html_escape(thing)
+            output += thing if no_escape else _html_escape(thing)
 
         # If we're a no html escape tag
         elif tag == "no escape":

@@ -5,6 +5,7 @@ description = "A Python implementation of the mustache template language"
 authors = ["Zanie <contact@zanie.dev>"]
 readme = "README.md"
 license = "MIT"
+repository = "https://github.com/zanieb/chevron-blue"
 
 [tool.poetry.dependencies]
 python = "^3.8"

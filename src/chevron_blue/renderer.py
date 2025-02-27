@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 import io
 import typing as t
 import warnings
@@ -225,6 +226,12 @@ def render(
 
     output = ""
 
+    # Keep track of the original delimiters.
+    # - Partials and variable lambdas want the originals.
+    # - Section lambdas want the current delimiters.
+    orig_ldel = def_ldel
+    orig_rdel = def_rdel
+
     if scopes is None:
         scopes = [data]
 
@@ -266,6 +273,23 @@ def render(
                 # (inverted tags do this)
                 # then get the un-coerced object (next in the stack)
                 thing = scopes[1]
+            if isinstance(thing, Callable):
+                # Handle the variable lambda according to
+                # https://jgonggrijp.gitlab.io/wontache/mustache.5.html#Variables
+                thing = render(
+                    template=str(thing()),
+                    data=data,
+                    partials_path=partials_path,
+                    partials_ext=partials_ext,
+                    partials_dict=partials_dict,
+                    padding=padding,
+                    def_ldel=orig_ldel,
+                    def_rdel=orig_rdel,
+                    scopes=scopes,
+                    warn=warn,
+                    keep=keep,
+                    no_escape=True,
+                )
             if not isinstance(thing, str):
                 thing = str(thing)
             output += thing if no_escape else _html_escape(thing)
@@ -281,6 +305,21 @@ def render(
                 def_ldel=def_ldel,
                 def_rdel=def_rdel,
             )
+            if isinstance(thing, Callable):
+                thing = render(
+                    template=str(thing()),
+                    data=data,
+                    partials_path=partials_path,
+                    partials_ext=partials_ext,
+                    partials_dict=partials_dict,
+                    padding=padding,
+                    def_ldel=orig_ldel,
+                    def_rdel=orig_rdel,
+                    scopes=scopes,
+                    warn=warn,
+                    keep=keep,
+                    no_escape=True,
+                )
             if not isinstance(thing, str):
                 thing = str(thing)
             output += thing
@@ -314,7 +353,7 @@ def render(
                     elif tag_type == "no escape":
                         text += "%s& %s %s" % (def_ldel, tag_key, def_rdel)
                     else:
-                        text += "%s%s %s%s" % (
+                        text += "%s%s%s%s" % (
                             def_ldel,
                             {
                                 "commment": "!",
@@ -332,10 +371,21 @@ def render(
 
                 g_token_cache[text] = tags
 
-                rend = scope(
-                    text,
-                    lambda template, data=None: render(
-                        template,
+                # Is this a "standard" section lambda or a chevron-style section lambda?
+                # Look at the number of arguments to decide.
+                sig = inspect.signature(scope)
+                count_params = len(
+                    [
+                        param
+                        for param in sig.parameters.values()
+                        if param.default is inspect.Parameter.empty
+                    ]
+                )
+                if count_params == 1:
+                    # A standard section lambda.
+                    # Documented in https://jgonggrijp.gitlab.io/wontache/mustache.5.html#Sections
+                    rend = render(
+                        scope(text),
                         data={},
                         partials_path=partials_path,
                         partials_ext=partials_ext,
@@ -347,8 +397,26 @@ def render(
                         on_missing_key=on_missing_key,
                         keep=keep,
                         no_escape=no_escape,
-                    ),
-                )
+                    )
+                else:
+                    # Chevron-style section lambda. (Nonstandard, but useful!)
+                    rend = scope(
+                        text,
+                        lambda template, data=None: render(
+                            template,
+                            data={},
+                            partials_path=partials_path,
+                            partials_ext=partials_ext,
+                            partials_dict=partials_dict,
+                            padding=padding,
+                            def_ldel=def_ldel,
+                            def_rdel=def_rdel,
+                            scopes=data and [data] + scopes or scopes,
+                            warn=warn,
+                            keep=keep,
+                            no_escape=no_escape,
+                        ),
+                    )
 
                 output += rend
 
@@ -424,8 +492,8 @@ def render(
                 partials_path=partials_path,
                 partials_ext=partials_ext,
                 partials_dict=partials_dict,
-                def_ldel=def_ldel,
-                def_rdel=def_rdel,
+                def_ldel=orig_ldel,
+                def_rdel=orig_rdel,
                 padding=part_padding,
                 scopes=scopes,
                 on_missing_key=on_missing_key,
@@ -440,5 +508,7 @@ def render(
 
             # Add the partials output to the ouput
             output += part_out
+        elif tag == "set delimiter":
+            def_ldel, def_rdel = key.split()
 
     return output

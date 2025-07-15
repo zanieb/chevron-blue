@@ -540,6 +540,40 @@ class ExpandedCoverage(unittest.TestCase):
         self.assertEqual(result, expected)
 
 
+class TestStrictness(unittest.TestCase):
+    def test_strictness_permissive(self):
+        args = {
+            "template": "{{missing}}",
+            "data": {},
+            "strictness": "permissive",
+        }
+
+        result = chevron_blue.render(**args)
+        expected = ""
+        self.assertEqual(result, expected)
+
+    def test_strictness_warn(self):
+        args = {
+            "template": "{{missing}}",
+            "data": {},
+            "strictness": "warn",
+        }
+
+        with self.assertWarns(UserWarning, msg="Could not find key 'missing'"):
+            chevron_blue.render(**args)
+
+    def test_strictness_strict(self):
+        args = {
+            "template": "{{missing}}",
+            "data": {},
+            "strictness": "strict",
+        }
+
+        with self.assertRaises(KeyError) as context:
+            chevron_blue.render(**args)
+            self.assertEqual(str(context.exception), "Could not find key 'missing'")
+
+
 # Run unit tests from command line
 if __name__ == "__main__":
     unittest.main()

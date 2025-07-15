@@ -1,5 +1,16 @@
 # Changelog
 
+## Upcoming
+
+- Replaced `render`'s `warn` argument with a `strictness` argument:
+    - `strictness='permissive'` is the default, corresponding to the previous
+      behavior of `warn=False`
+    - `strictness='warn'` will log a warning when a key is missing,
+      corresponding to the previous behavior of `warn=True`
+    - `strictness='strict'` will raise a `KeyError` when a key is missing
+
+    See [#14](https://github.com/zanieb/chevron-blue/pull/14).
+
 ## 0.2.1
 
 - Fixed bug where `--no-escape` was not applied to recursive patterns; (see [#5](https://github.com/zanieb/chevron-blue/pull/5))

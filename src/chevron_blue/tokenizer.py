@@ -83,7 +83,7 @@ def parse_tag(template, l_del, r_del):
     try:
         tag, template = template.split(r_del, 1)
     except ValueError:
-        raise ChevronError("unclosed tag " "at line {0}".format(_CURRENT_LINE))
+        raise ChevronError("unclosed tag at line {0}".format(_CURRENT_LINE))
 
     # Find the type meaning of the first character
     tag_type = tag_types.get(tag[0], "variable")
@@ -104,7 +104,7 @@ def parse_tag(template, l_del, r_del):
         # Otherwise we should complain
         else:
             raise ChevronError(
-                "unclosed set delimiter tag\n" "at line {0}".format(_CURRENT_LINE)
+                "unclosed set delimiter tag\nat line {0}".format(_CURRENT_LINE)
             )
 
     # If we might be a no html escape tag

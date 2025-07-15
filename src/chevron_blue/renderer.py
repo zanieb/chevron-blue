@@ -1,9 +1,15 @@
+from __future__ import annotations
+
 import io
-import sys
+import typing as t
+import warnings
 from collections.abc import Callable, Iterator, Sequence
-from os import linesep, path
+from os import path
 
 from .tokenizer import tokenize
+
+if t.TYPE_CHECKING:
+    StrictMode = t.Literal["permissive", "warn", "strict"]
 
 #
 # Helper functions
@@ -26,7 +32,7 @@ def _html_escape(string):
     return string
 
 
-def _get_key(key, scopes, warn, keep, def_ldel, def_rdel):
+def _get_key(key, scopes, strictness: StrictMode, keep, def_ldel, def_rdel):
     """Get a key from the current scope"""
 
     # If the key is a dot
@@ -73,8 +79,14 @@ def _get_key(key, scopes, warn, keep, def_ldel, def_rdel):
 
     # We couldn't find the key in any of the scopes
 
-    if warn:
-        sys.stderr.write("Could not find key '%s'%s" % (key, linesep))
+    if strictness == "warn":
+        warnings.warn(
+            "Could not find key '%s' in data" % key,
+            UserWarning,
+            stacklevel=2,
+        )
+    elif strictness == "strict":
+        raise KeyError("Could not find key '%s'" % key)
 
     if keep:
         return "%s %s %s" % (def_ldel, key, def_rdel)
@@ -121,7 +133,7 @@ def render(
     def_ldel="{{",
     def_rdel="}}",
     scopes=None,
-    warn=False,
+    strictness: StrictMode = "permissive",
     keep=False,
     no_escape=False,
 ):
@@ -169,7 +181,12 @@ def render(
 
     scopes        -- The list of scopes that get_key will look through
 
-    warn          -- Issue a warning to stderr when a template substitution isn't found in the data
+    strictness    -- How strict to be when a template substitution isn't found in the data.
+                     Can be one of:
+                     * permissive -- Do not warn or raise an exception
+                     * warn       -- Issue a warning to stderr
+                     * strict     -- Raise a KeyError
+                     (default: permissive)
 
     no_escape     -- Do not HTML escape variable values
 
@@ -224,7 +241,12 @@ def render(
         elif tag == "variable":
             # Add the html escaped key to the output
             thing = _get_key(
-                key, scopes, warn=warn, keep=keep, def_ldel=def_ldel, def_rdel=def_rdel
+                key,
+                scopes,
+                strictness=strictness,
+                keep=keep,
+                def_ldel=def_ldel,
+                def_rdel=def_rdel,
             )
             if thing is True and key == ".":
                 # if we've coerced into a boolean by accident
@@ -239,7 +261,12 @@ def render(
         elif tag == "no escape":
             # Just lookup the key and add it
             thing = _get_key(
-                key, scopes, warn=warn, keep=keep, def_ldel=def_ldel, def_rdel=def_rdel
+                key,
+                scopes,
+                strictness=strictness,
+                keep=keep,
+                def_ldel=def_ldel,
+                def_rdel=def_rdel,
             )
             if not isinstance(thing, str):
                 thing = str(thing)
@@ -249,7 +276,12 @@ def render(
         elif tag == "section":
             # Get the sections scope
             scope = _get_key(
-                key, scopes, warn=warn, keep=keep, def_ldel=def_ldel, def_rdel=def_rdel
+                key,
+                scopes,
+                strictness=strictness,
+                keep=keep,
+                def_ldel=def_ldel,
+                def_rdel=def_rdel,
             )
 
             # If the scope is a callable (as described in
@@ -299,7 +331,7 @@ def render(
                         def_ldel=def_ldel,
                         def_rdel=def_rdel,
                         scopes=data and [data] + scopes or scopes,
-                        warn=warn,
+                        strictness=strictness,
                         keep=keep,
                         no_escape=no_escape,
                     ),
@@ -339,7 +371,7 @@ def render(
                         partials_dict=partials_dict,
                         def_ldel=def_ldel,
                         def_rdel=def_rdel,
-                        warn=warn,
+                        strictness=strictness,
                         keep=keep,
                         no_escape=no_escape,
                     )
@@ -353,7 +385,12 @@ def render(
         elif tag == "inverted section":
             # Add the flipped scope to the scopes
             scope = _get_key(
-                key, scopes, warn=warn, keep=keep, def_ldel=def_ldel, def_rdel=def_rdel
+                key,
+                scopes,
+                strictness=strictness,
+                keep=keep,
+                def_ldel=def_ldel,
+                def_rdel=def_rdel,
             )
             scopes.insert(0, not scope)
 
@@ -378,7 +415,7 @@ def render(
                 def_rdel=def_rdel,
                 padding=part_padding,
                 scopes=scopes,
-                warn=warn,
+                strictness=strictness,
                 keep=keep,
                 no_escape=no_escape,
             )

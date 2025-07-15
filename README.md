@@ -12,6 +12,6 @@ The following changes have been made:
 - Switched to GitHub Actions for CI
 - Used Ruff for linting and formatting
 - Dropped support for Python 2
-- Verified support for Python 3.7 - 3.12
+- Verified support for Python 3.7 - 3.14
 - Fixed bug where variables could be incorrectly resolved from other scopes (see [#3](https://github.com/zanieb/chevron-blue/pull/3))
 - Added global `--no-escape` option to disable HTML escaping (see [#4](https://github.com/zanieb/chevron-blue/pull/4))

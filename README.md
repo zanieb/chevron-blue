@@ -8,7 +8,7 @@ This library is a fork of [chevron](https://github.com/noahmorrison/chevron) aut
 
 The following changes have been made:
 
-- Switched to a modern build system (`poetry`)
+- Switched to a modern build system
 - Switched to GitHub Actions for CI
 - Used Ruff for linting and formatting
 - Dropped support for Python 2

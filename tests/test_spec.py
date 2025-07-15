@@ -252,7 +252,7 @@ class ExpandedCoverage(unittest.TestCase):
         result = chevron_blue.render(**args)
         expected = "1234 not implemented"
         template_content = (
-            " {{& city }} || {{& town }} || {{& village }} " "|| {{& state }} "
+            " {{& city }} || {{& town }} || {{& village }} || {{& state }} "
         )
 
         self.assertEqual(result, expected)
@@ -394,7 +394,7 @@ class ExpandedCoverage(unittest.TestCase):
     # https://github.com/noahmorrison/chevron/issues/52
     def test_indexed(self):
         args = {
-            "template": "count {{count.0}}, {{count.1}}, " "{{count.100}}, {{nope.0}}",
+            "template": "count {{count.0}}, {{count.1}}, {{count.100}}, {{nope.0}}",
             "data": {
                 "count": [5, 4, 3, 2, 1],
             },

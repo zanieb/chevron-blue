@@ -9,7 +9,7 @@ from os import path
 from .tokenizer import tokenize
 
 if t.TYPE_CHECKING:
-    StrictMode = t.Literal["permissive", "warn", "strict"]
+    OnMissingKey = t.Literal["ignore", "warn", "error"]
 
 #
 # Helper functions
@@ -32,7 +32,7 @@ def _html_escape(string):
     return string
 
 
-def _get_key(key, scopes, strictness: StrictMode, keep, def_ldel, def_rdel):
+def _get_key(key, scopes, on_missing_key: OnMissingKey, keep, def_ldel, def_rdel):
     """Get a key from the current scope"""
 
     # If the key is a dot
@@ -79,13 +79,13 @@ def _get_key(key, scopes, strictness: StrictMode, keep, def_ldel, def_rdel):
 
     # We couldn't find the key in any of the scopes
 
-    if strictness == "warn":
+    if on_missing_key == "warn":
         warnings.warn(
             "Could not find key '%s' in data" % key,
             UserWarning,
             stacklevel=2,
         )
-    elif strictness == "strict":
+    elif on_missing_key == "error":
         raise KeyError("Could not find key '%s'" % key)
 
     if keep:
@@ -136,7 +136,7 @@ def render(
     warn=None,
     keep=False,
     no_escape=False,
-    strictness: StrictMode | None = None,
+    on_missing_key: OnMissingKey | None = None,
 ):
     """Render a mustache template.
 
@@ -183,13 +183,13 @@ def render(
     scopes        -- The list of scopes that get_key will look through
 
     warn          -- When true, issue warnings.
-                     Deprecated; use `strictness` instead. Equivalent to `strictness="warn"`.
+                     Deprecated; use `on_missing_key` instead. Equivalent to `on_missing_key="warn"`.
 
     no_escape     -- Do not HTML escape variable values
 
     keep          -- Keep unreplaced tags when a template substitution isn't found in the data
 
-    strictness    -- How strict to be when a template substitution isn't found in the data.
+    on_missing_key    -- How strict to be when a template substitution isn't found in the data.
                      Can be one of:
                      * permissive -- Do not warn or raise an exception
                      * warn       -- Issue a warning to stderr
@@ -202,12 +202,14 @@ def render(
     """
 
     if warn is None:
-        strictness = strictness or "permissive"
+        on_missing_key = on_missing_key or "ignore"
     else:
         # If incompatible options are used, error
-        if strictness is not None:
-            raise ValueError("The `warn` argument cannot be used with `strictness`.")
-        strictness = "warn" if warn else "permissive"
+        if on_missing_key is not None:
+            raise ValueError(
+                "The `warn` argument cannot be used with `on_missing_key`."
+            )
+        on_missing_key = "warn" if warn else "ignore"
 
     # If the template is a seqeuence but not derived from a string
     if isinstance(template, Sequence) and not isinstance(template, str):
@@ -254,7 +256,7 @@ def render(
             thing = _get_key(
                 key,
                 scopes,
-                strictness=strictness,
+                on_missing_key=on_missing_key,
                 keep=keep,
                 def_ldel=def_ldel,
                 def_rdel=def_rdel,
@@ -274,7 +276,7 @@ def render(
             thing = _get_key(
                 key,
                 scopes,
-                strictness=strictness,
+                on_missing_key=on_missing_key,
                 keep=keep,
                 def_ldel=def_ldel,
                 def_rdel=def_rdel,
@@ -289,7 +291,7 @@ def render(
             scope = _get_key(
                 key,
                 scopes,
-                strictness=strictness,
+                on_missing_key=on_missing_key,
                 keep=keep,
                 def_ldel=def_ldel,
                 def_rdel=def_rdel,
@@ -342,7 +344,7 @@ def render(
                         def_ldel=def_ldel,
                         def_rdel=def_rdel,
                         scopes=data and [data] + scopes or scopes,
-                        strictness=strictness,
+                        on_missing_key=on_missing_key,
                         keep=keep,
                         no_escape=no_escape,
                     ),
@@ -382,7 +384,7 @@ def render(
                         partials_dict=partials_dict,
                         def_ldel=def_ldel,
                         def_rdel=def_rdel,
-                        strictness=strictness,
+                        on_missing_key=on_missing_key,
                         keep=keep,
                         no_escape=no_escape,
                     )
@@ -398,7 +400,7 @@ def render(
             scope = _get_key(
                 key,
                 scopes,
-                strictness=strictness,
+                on_missing_key=on_missing_key,
                 keep=keep,
                 def_ldel=def_ldel,
                 def_rdel=def_rdel,
@@ -426,7 +428,7 @@ def render(
                 def_rdel=def_rdel,
                 padding=part_padding,
                 scopes=scopes,
-                strictness=strictness,
+                on_missing_key=on_missing_key,
                 keep=keep,
                 no_escape=no_escape,
             )

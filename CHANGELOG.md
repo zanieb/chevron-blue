@@ -1,6 +1,6 @@
 # Changelog
 
-## Upcoming
+## 0.3.0
 
 - Added `on_missing_key = "ignore" | "warn" | "error"` as an alternative to `warn` that errors on missing keys (see [#14](https://github.com/zanieb/chevron-blue/pull/14))
 

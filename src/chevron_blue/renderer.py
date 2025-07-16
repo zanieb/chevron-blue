@@ -239,7 +239,7 @@ def render(
         elif tag == "no escape":
             # Just lookup the key and add it
             thing = _get_key(
-                key, scopes, warn=warn, keep=keep, def_ldel=def_ldel, def_rdel=def_rdel
+                key, scopes, warn=warn, keep=keep, def_ldel=f"{{{def_ldel}", def_rdel=f"{def_rdel}}}"
             )
             if not isinstance(thing, str):
                 thing = str(thing)

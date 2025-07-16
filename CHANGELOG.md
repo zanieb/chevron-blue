@@ -2,8 +2,7 @@
 
 ## Upcoming
 
-- The `warn` argument can now be `'strict'` to raise an exception when a key is missing;
-  (see [#14](https://github.com/zanieb/chevron-blue/pull/14))
+- Added `on_missing_key = "ignore" | "warn" | "error"` as an alternative to `warn` that errors on missing keys (see [#14](https://github.com/zanieb/chevron-blue/pull/14))
 
 ## 0.2.1
 

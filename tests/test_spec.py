@@ -540,6 +540,76 @@ class ExpandedCoverage(unittest.TestCase):
         self.assertEqual(result, expected)
 
 
+class Teston_missing_key(unittest.TestCase):
+    def test_on_missing_key_ignore(self):
+        args = {
+            "template": "{{missing}}",
+            "data": {},
+            "on_missing_key": "ignore",
+        }
+
+        result = chevron_blue.render(**args)
+        expected = ""
+        self.assertEqual(result, expected)
+
+    def test_on_missing_key_warn(self):
+        args = {
+            "template": "{{missing}}",
+            "data": {},
+            "on_missing_key": "warn",
+        }
+
+        with self.assertWarns(UserWarning, msg="Could not find key 'missing'"):
+            chevron_blue.render(**args)
+
+    def test_on_missing_key_error(self):
+        args = {
+            "template": "{{missing}}",
+            "data": {},
+            "on_missing_key": "error",
+        }
+
+        with self.assertRaises(KeyError) as context:
+            chevron_blue.render(**args)
+            self.assertEqual(str(context.exception), "Could not find key 'missing'")
+
+    def test_on_missing_key_warn_false(self):
+        args = {
+            "template": "{{missing}}",
+            "data": {},
+            "warn": False,
+        }
+
+        result = chevron_blue.render(**args)
+        expected = ""
+        self.assertEqual(result, expected)
+
+    def test_on_missing_key_warn_true(self):
+        args = {
+            "template": "{{missing}}",
+            "data": {},
+            "warn": True,
+        }
+
+        with self.assertWarns(UserWarning, msg="Could not find key 'missing'"):
+            chevron_blue.render(**args)
+
+    def test_on_missing_key_and_warn(self):
+        args = {
+            "template": "{{missing}}",
+            "data": {},
+            "warn": True,
+            "on_missing_key": "ignore",
+        }
+
+        with self.assertRaises(ValueError) as context:
+            chevron_blue.render(**args)
+            self.assertEqual(
+                str(context.exception),
+                "The `warn` argument cannot be used with `on_missing_key`.",
+            )
+
+
 # Run unit tests from command line
 if __name__ == "__main__":
     unittest.main()

@@ -9,7 +9,7 @@ from os import path
 from .tokenizer import tokenize
 
 if t.TYPE_CHECKING:
-    StrictMode = t.Literal[False, True, "strict"]
+    StrictMode = t.Literal["permissive", "warn", "strict"]
 
 #
 # Helper functions
@@ -32,7 +32,7 @@ def _html_escape(string):
     return string
 
 
-def _get_key(key, scopes, warn: StrictMode, keep, def_ldel, def_rdel):
+def _get_key(key, scopes, strictness: StrictMode, keep, def_ldel, def_rdel):
     """Get a key from the current scope"""
 
     # If the key is a dot
@@ -79,13 +79,13 @@ def _get_key(key, scopes, warn: StrictMode, keep, def_ldel, def_rdel):
 
     # We couldn't find the key in any of the scopes
 
-    if warn is True:
+    if strictness == "warn":
         warnings.warn(
             "Could not find key '%s' in data" % key,
             UserWarning,
             stacklevel=2,
         )
-    elif warn == "strict":
+    elif strictness == "strict":
         raise KeyError("Could not find key '%s'" % key)
 
     if keep:
@@ -133,7 +133,7 @@ def render(
     def_ldel="{{",
     def_rdel="}}",
     scopes=None,
-    warn: StrictMode = False,
+    strictness: StrictMode = "permissive",
     keep=False,
     no_escape=False,
 ):
@@ -181,12 +181,12 @@ def render(
 
     scopes        -- The list of scopes that get_key will look through
 
-    warn          -- How strict to be when a template substitution isn't found in the data.
+    strictness    -- How strict to be when a template substitution isn't found in the data.
                      Can be one of:
-                     * False    -- Do not warn or raise an exception
-                     * True     -- Issue a warning to stderr
-                     * 'strict' -- Raise a KeyError
-                     (default: False)
+                     * permissive -- Do not warn or raise an exception
+                     * warn       -- Issue a warning to stderr
+                     * strict     -- Raise a KeyError
+                     (default: permissive)
 
     no_escape     -- Do not HTML escape variable values
 
@@ -243,7 +243,7 @@ def render(
             thing = _get_key(
                 key,
                 scopes,
-                warn=warn,
+                strictness=strictness,
                 keep=keep,
                 def_ldel=def_ldel,
                 def_rdel=def_rdel,
@@ -263,7 +263,7 @@ def render(
             thing = _get_key(
                 key,
                 scopes,
-                warn=warn,
+                strictness=strictness,
                 keep=keep,
                 def_ldel=def_ldel,
                 def_rdel=def_rdel,
@@ -278,7 +278,7 @@ def render(
             scope = _get_key(
                 key,
                 scopes,
-                warn=warn,
+                strictness=strictness,
                 keep=keep,
                 def_ldel=def_ldel,
                 def_rdel=def_rdel,
@@ -331,7 +331,7 @@ def render(
                         def_ldel=def_ldel,
                         def_rdel=def_rdel,
                         scopes=data and [data] + scopes or scopes,
-                        warn=warn,
+                        strictness=strictness,
                         keep=keep,
                         no_escape=no_escape,
                     ),
@@ -371,7 +371,7 @@ def render(
                         partials_dict=partials_dict,
                         def_ldel=def_ldel,
                         def_rdel=def_rdel,
-                        warn=warn,
+                        strictness=strictness,
                         keep=keep,
                         no_escape=no_escape,
                     )
@@ -387,7 +387,7 @@ def render(
             scope = _get_key(
                 key,
                 scopes,
-                warn=warn,
+                strictness=strictness,
                 keep=keep,
                 def_ldel=def_ldel,
                 def_rdel=def_rdel,
@@ -415,7 +415,7 @@ def render(
                 def_rdel=def_rdel,
                 padding=part_padding,
                 scopes=scopes,
-                warn=warn,
+                strictness=strictness,
                 keep=keep,
                 no_escape=no_escape,
             )

@@ -540,33 +540,33 @@ class ExpandedCoverage(unittest.TestCase):
         self.assertEqual(result, expected)
 
 
-class TestWarn(unittest.TestCase):
-    def test_warn_permissive(self):
+class TestStrictness(unittest.TestCase):
+    def test_strictness_permissive(self):
         args = {
             "template": "{{missing}}",
             "data": {},
-            "warn": False,
+            "strictness": "permissive",
         }
 
         result = chevron_blue.render(**args)
         expected = ""
         self.assertEqual(result, expected)
 
-    def test_warn_warn(self):
+    def test_strictness_warn(self):
         args = {
             "template": "{{missing}}",
             "data": {},
-            "warn": True,
+            "strictness": "warn",
         }
 
         with self.assertWarns(UserWarning, msg="Could not find key 'missing'"):
             chevron_blue.render(**args)
 
-    def test_warn_strict(self):
+    def test_strictness_strict(self):
         args = {
             "template": "{{missing}}",
             "data": {},
-            "warn": "strict",
+            "strictness": "strict",
         }
 
         with self.assertRaises(KeyError) as context:

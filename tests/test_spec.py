@@ -573,6 +573,42 @@ class TestStrictness(unittest.TestCase):
             chevron_blue.render(**args)
             self.assertEqual(str(context.exception), "Could not find key 'missing'")
 
+    def test_strictness_warn_false(self):
+        args = {
+            "template": "{{missing}}",
+            "data": {},
+            "warn": False,
+        }
+
+        result = chevron_blue.render(**args)
+        expected = ""
+        self.assertEqual(result, expected)
+
+    def test_strictness_warn_true(self):
+        args = {
+            "template": "{{missing}}",
+            "data": {},
+            "warn": True,
+        }
+
+        with self.assertWarns(UserWarning, msg="Could not find key 'missing'"):
+            chevron_blue.render(**args)
+
+    def test_strictness_and_warn(self):
+        args = {
+            "template": "{{missing}}",
+            "data": {},
+            "warn": True,
+            "strictness": "permissive",
+        }
+
+        with self.assertRaises(ValueError) as context:
+            chevron_blue.render(**args)
+            self.assertEqual(
+                str(context.exception),
+                "The `warn` argument cannot be used with `strictness`.",
+            )
+
 
 # Run unit tests from command line
 if __name__ == "__main__":

@@ -133,9 +133,10 @@ def render(
     def_ldel="{{",
     def_rdel="}}",
     scopes=None,
-    strictness: StrictMode = "permissive",
+    warn=None,
     keep=False,
     no_escape=False,
+    strictness: StrictMode | None = None,
 ):
     """Render a mustache template.
 
@@ -181,6 +182,13 @@ def render(
 
     scopes        -- The list of scopes that get_key will look through
 
+    warn          -- When true, issue warnings.
+                     Deprecated; use `strictness` instead. Equivalent to `strictness="warn"`.
+
+    no_escape     -- Do not HTML escape variable values
+
+    keep          -- Keep unreplaced tags when a template substitution isn't found in the data
+
     strictness    -- How strict to be when a template substitution isn't found in the data.
                      Can be one of:
                      * permissive -- Do not warn or raise an exception
@@ -188,15 +196,18 @@ def render(
                      * strict     -- Raise a KeyError
                      (default: permissive)
 
-    no_escape     -- Do not HTML escape variable values
-
-    keep          -- Keep unreplaced tags when a template substitution isn't found in the data
-
-
     Returns:
 
     A string containing the rendered template.
     """
+
+    if warn is None:
+        strictness = strictness or "permissive"
+    else:
+        # If incompatible options are used, error
+        if strictness is not None:
+            raise ValueError("The `warn` argument cannot be used with `strictness`.")
+        strictness = "warn" if warn else "permissive"
 
     # If the template is a seqeuence but not derived from a string
     if isinstance(template, Sequence) and not isinstance(template, str):

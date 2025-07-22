@@ -138,6 +138,7 @@ def render(
     keep=False,
     no_escape=False,
     on_missing_key: OnMissingKey | None = None,
+    extended_lambdas: bool = True,
 ):
     """Render a mustache template.
 
@@ -196,6 +197,8 @@ def render(
                      * warn       -- Issue a warning to stderr
                      * strict     -- Raise a KeyError
                      (default: permissive)
+
+    extended_lambdas  -- When False, disable the non-standard chevron-style section lambdas. (default: True)
 
     Returns:
 
@@ -381,24 +384,8 @@ def render(
                         if param.default is inspect.Parameter.empty
                     ]
                 )
-                if count_params == 1:
-                    # A standard section lambda.
-                    # Documented in https://jgonggrijp.gitlab.io/wontache/mustache.5.html#Sections
-                    rend = render(
-                        scope(text),
-                        data={},
-                        partials_path=partials_path,
-                        partials_ext=partials_ext,
-                        partials_dict=partials_dict,
-                        padding=padding,
-                        def_ldel=def_ldel,
-                        def_rdel=def_rdel,
-                        scopes=data and [data] + scopes or scopes,
-                        on_missing_key=on_missing_key,
-                        keep=keep,
-                        no_escape=no_escape,
-                    )
-                else:
+
+                if extended_lambdas and count_params == 2:
                     # Chevron-style section lambda. (Nonstandard, but useful!)
                     rend = scope(
                         text,
@@ -416,6 +403,23 @@ def render(
                             keep=keep,
                             no_escape=no_escape,
                         ),
+                    )
+                else:
+                    # A standard section lambda.
+                    # Documented in https://jgonggrijp.gitlab.io/wontache/mustache.5.html#Sections
+                    rend = render(
+                        scope(text),
+                        data={},
+                        partials_path=partials_path,
+                        partials_ext=partials_ext,
+                        partials_dict=partials_dict,
+                        padding=padding,
+                        def_ldel=def_ldel,
+                        def_rdel=def_rdel,
+                        scopes=data and [data] + scopes or scopes,
+                        on_missing_key=on_missing_key,
+                        keep=keep,
+                        no_escape=no_escape,
                     )
 
                 output += rend

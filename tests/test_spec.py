@@ -574,6 +574,24 @@ class ExpandedCoverage(unittest.TestCase):
         )
         self.assertEqual(result, expected)
 
+    def test_disable_extended_lambdas(self):
+        # `render(..., extended_lambdas=False)` disables the chevron-style section lambdas.
+
+        def extended_func(content, render):
+            self.fail("SHOULD NOT CALL THIS")
+
+        with self.assertRaises(TypeError) as raised:
+            chevron_blue.render(
+                template="{{#extended_func}}hello{{/extended_func}}",
+                data={"extended_func": extended_func},
+                extended_lambdas=False,
+            )
+        error_message = str(raised.exception)
+        # Should have complained about the right function
+        assert "extended_func" in error_message
+        # Should have complained about the right thing.
+        assert "missing 1 required positional argument" in error_message
+
 
 class Teston_missing_key(unittest.TestCase):
     def test_on_missing_key_ignore(self):

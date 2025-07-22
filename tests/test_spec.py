@@ -4,9 +4,12 @@ import collections
 import io
 import json
 import os
+import textwrap
 import unittest
 
 import chevron_blue
+
+SUPPORTED_OPTIONAL_SPECS = {"~lambdas.json"}
 
 SPECS_PATH = os.path.join("spec", "specs")
 if os.path.exists(SPECS_PATH):
@@ -27,8 +30,18 @@ def _test_case_from_path(json_path):
             """Generate a unit test from a test object"""
 
             def test_case(self):
+                data = obj["data"]
+                updates = {}
+                if hasattr(data, "items"):
+                    for key, value in data.items():
+                        if hasattr(value, "get") and value.get("__tag__") == "code":
+                            updates[key] = eval(value["python"])
+
+                if updates:
+                    data.update(updates)
+
                 result = STACHE(
-                    obj["template"], obj["data"], partials_dict=obj.get("partials", {})
+                    obj["template"], data, partials_dict=obj.get("partials", {})
                 )
 
                 assert result == obj["expected"], obj["desc"]
@@ -54,8 +67,8 @@ def _test_case_from_path(json_path):
 
 # Create TestCase for each json file
 for spec in SPECS:
-    # Ignore optional tests
-    if spec[0] != "~":
+    # Ignore unsupported optional tests
+    if spec[0] != "~" or spec in SUPPORTED_OPTIONAL_SPECS:
         spec = spec.split(".")[0]
         globals()[spec] = _test_case_from_path(os.path.join(SPECS_PATH, spec))
 
@@ -538,6 +551,46 @@ class ExpandedCoverage(unittest.TestCase):
         result = chevron_blue.render(**args)
         expected = '< > & "'
         self.assertEqual(result, expected)
+
+    def test_lambda_variable_should_not_escape_multiple_times(self):
+        args = {
+            "template": textwrap.dedent(
+                """\
+                double: {{lambda}}
+                triple: {{{lambda}}}
+                """
+            ),
+            "data": {
+                "val": "<",
+                "lambda": lambda: "double({{val}}) triple({{val}}) direct({{val}})",
+            },
+        }
+        result = chevron_blue.render(**args)
+        expected = textwrap.dedent(
+            """\
+            double: double(&lt;) triple(&lt;) direct(&lt;)
+            triple: double(<) triple(<) direct(<)
+            """
+        )
+        self.assertEqual(result, expected)
+
+    def test_disable_extended_lambdas(self):
+        # `render(..., extended_lambdas=False)` disables the chevron-style section lambdas.
+
+        def extended_func(content, render):
+            self.fail("SHOULD NOT CALL THIS")
+
+        with self.assertRaises(TypeError) as raised:
+            chevron_blue.render(
+                template="{{#extended_func}}hello{{/extended_func}}",
+                data={"extended_func": extended_func},
+                extended_lambdas=False,
+            )
+        error_message = str(raised.exception)
+        # Should have complained about the right function
+        assert "extended_func" in error_message
+        # Should have complained about the right thing.
+        assert "missing 1 required positional argument" in error_message
 
 
 class Teston_missing_key(unittest.TestCase):

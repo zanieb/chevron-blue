@@ -23,13 +23,13 @@ jobs:
     if: github.ref == 'refs/heads/main' || contains(github.event.pull_request.labels.*.name, 'test-build')
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           persist-credentials: false
           fetch-depth: 0
 
       - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@5a7eac68fb9809dea845d802897dc5c723910fa3 # v7.1.3
   
       - name: Publish to Test PyPI
         id: build
@@ -52,17 +52,19 @@ jobs:
 
     steps:
       - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@5a7eac68fb9809dea845d802897dc5c723910fa3 # v7.1.3
 
       - name: Wait for package to be available
         run: >
           until
           curl --silent "https://test.pypi.org/simple/chevron-blue/"
-          | grep --quiet "${{ needs.build-and-publish.outputs.build-version }}";
+          | grep --quiet "${NEEDS_BUILD_AND_PUBLISH_OUTPUTS_BUILD_VERSION}";
           do sleep 10;
           done
           &&
           sleep 120
+        env:
+          NEEDS_BUILD_AND_PUBLISH_OUTPUTS_BUILD_VERSION: ${{ needs.build-and-publish.outputs.build-version }}
           # We sleep for an additional 120 seconds as it seems to take a bit longer for
           # the package to be consistently available
 
@@ -71,12 +73,16 @@ jobs:
       - name: Install release from Test PyPI
         run: |
           uv venv -p 3.13
-          uv pip install --index-strategy unsafe-best-match --refresh-package chevron-blue --extra-index-url https://test.pypi.org/simple/ chevron-blue==${{ needs.build-and-publish.outputs.build-version }}
+          uv pip install --index-strategy unsafe-best-match --refresh-package chevron-blue --extra-index-url https://test.pypi.org/simple/ chevron-blue==${NEEDS_BUILD_AND_PUBLISH_OUTPUTS_BUILD_VERSION}
+        env:
+          NEEDS_BUILD_AND_PUBLISH_OUTPUTS_BUILD_VERSION: ${{ needs.build-and-publish.outputs.build-version }}
 
       - name: Check release version
         run: |
           installed=$(uv run python -c "from importlib.metadata import version; print(version('chevron-blue'))")
-          test $installed = ${{ needs.build-and-publish.outputs.build-version }}
+          test $installed = ${NEEDS_BUILD_AND_PUBLISH_OUTPUTS_BUILD_VERSION}
+        env:
+          NEEDS_BUILD_AND_PUBLISH_OUTPUTS_BUILD_VERSION: ${{ needs.build-and-publish.outputs.build-version }}
 
       - name: Check CLI help
         run: |
